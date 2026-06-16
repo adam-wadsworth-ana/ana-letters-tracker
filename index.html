@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ANA Policy Letter Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="brand-mark" aria-label="ANA logo placeholder">ANA</div>
+      <div>
+        <p class="eyebrow">Policy position letters</p>
+        <h1>ANA Letter Tracker</h1>
+      </div>
+    </header>
+
+    <main>
+      <section class="summary-band" aria-label="Tracker summary">
+        <div>
+          <span id="totalLetters">0</span>
+          <strong>Letters</strong>
+        </div>
+        <div>
+          <span id="totalStates">0</span>
+          <strong>States</strong>
+        </div>
+        <div>
+          <span id="latestDate">--</span>
+          <strong>Latest submission</strong>
+        </div>
+      </section>
+
+      <section class="map-section" aria-labelledby="mapTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Interactive map</p>
+            <h2 id="mapTitle">Letters by State</h2>
+          </div>
+          <button id="clearState" class="ghost-button" type="button">Clear state</button>
+        </div>
+        <div class="map-layout">
+          <div id="stateMap" class="state-map" aria-label="Clickable U.S. state map"></div>
+          <aside class="state-panel" aria-live="polite">
+            <p class="eyebrow">Selected state</p>
+            <h3 id="selectedStateName">All states</h3>
+            <p id="selectedStateCount" class="muted">Select a highlighted state to view letters.</p>
+            <div id="stateLetters" class="state-letters"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="table-section" aria-labelledby="tableTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Full tracker</p>
+            <h2 id="tableTitle">Submitted Letters</h2>
+          </div>
+          <p id="resultCount" class="muted">0 records</p>
+        </div>
+
+        <div class="filters" role="search">
+          <label>
+            <span>Search</span>
+            <input id="searchInput" type="search" placeholder="Search bill, topic, state, recipient...">
+          </label>
+          <label>
+            <span>State</span>
+            <select id="stateFilter">
+              <option value="">All states</option>
+            </select>
+          </label>
+          <label>
+            <span>ANA position</span>
+            <select id="positionFilter">
+              <option value="">All positions</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th><button type="button" data-sort="state">State</button></th>
+                <th><button type="button" data-sort="billNumber">Bill Number</button></th>
+                <th><button type="button" data-sort="billTopic">Bill Topic</button></th>
+                <th><button type="button" data-sort="anaPosition">ANA Position</button></th>
+                <th><button type="button" data-sort="submissionDate">Submission Date</button></th>
+                <th><button type="button" data-sort="submittedTo">Submitted To</button></th>
+                <th>Letter PDF</th>
+              </tr>
+            </thead>
+            <tbody id="lettersBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="maintenance" aria-labelledby="maintenanceTitle">
+        <h2 id="maintenanceTitle">Updating the Tracker</h2>
+        <p>Add new records to <code>data/letters.json</code> using <code>YYYY-MM-DD</code> dates. Put new PDF letters in <code>letters/</code> and reference them with a relative link such as <code>letters/example.pdf</code>.</p>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
