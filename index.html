@@ -23,7 +23,7 @@
         </div>
         <div>
           <span id="totalStates">0</span>
-          <strong>States</strong>
+          <strong>States/Federal</strong>
         </div>
         <div>
           <span id="latestDate">--</span>
@@ -35,14 +35,14 @@
         <div class="section-heading">
           <div>
             <p class="eyebrow">Interactive map</p>
-            <h2 id="mapTitle">Letters by State</h2>
+            <h2 id="mapTitle">Letters by State/Federal</h2>
           </div>
-          <button id="clearState" class="ghost-button" type="button">Clear state</button>
+          <button id="clearState" class="ghost-button" type="button">Clear selection</button>
         </div>
         <div class="map-layout">
           <div id="stateMap" class="state-map" aria-label="Clickable U.S. state map"></div>
           <aside class="state-panel" aria-live="polite">
-            <p class="eyebrow">Selected state</p>
+            <p class="eyebrow">Selected area</p>
             <h3 id="selectedStateName">All states</h3>
             <p id="selectedStateCount" class="muted">Select a highlighted state to view letters.</p>
             <div id="stateLetters" class="state-letters"></div>
@@ -65,7 +65,7 @@
             <input id="searchInput" type="search" placeholder="Search bill, topic, state, recipient...">
           </label>
           <label>
-            <span>State</span>
+            <span>State/Federal</span>
             <select id="stateFilter">
               <option value="">All states</option>
             </select>
