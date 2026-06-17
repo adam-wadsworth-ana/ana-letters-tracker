@@ -262,7 +262,7 @@ function bindEvents() {
 
 async function init() {
   try {
-    const response = await fetch("data/letters.json");
+    const response = await fetch("data/letters.json?v=20260617-fed", { cache: "no-store" });
     if (!response.ok) throw new Error("Could not load letter data.");
     letters = await response.json();
     buildSummary();
