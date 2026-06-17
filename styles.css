@@ -231,6 +231,10 @@ a {
   font-weight: 700;
 }
 
+.bill-link {
+  text-underline-offset: 3px;
+}
+
 .filters {
   display: grid;
   grid-template-columns: minmax(260px, 1fr) minmax(170px, 220px) minmax(170px, 220px);

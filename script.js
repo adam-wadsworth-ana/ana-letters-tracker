@@ -83,6 +83,7 @@ let letters = [];
 let selectedState = "";
 let sortKey = "submissionDate";
 let sortDirection = "desc";
+const DATA_VERSION = "20260617-issue-links";
 
 function formatDate(value) {
   if (!value) return "Not dated";
@@ -109,6 +110,13 @@ function sortRecords(records) {
     const result = compareValues(a, b, sortKey);
     return sortDirection === "asc" ? result : -result;
   });
+}
+
+function billNumberMarkup(item) {
+  const label = item.billNumber || "Unlisted bill";
+  return item.issueUrl
+    ? `<a class="bill-link" href="${item.issueUrl}" target="_blank" rel="noopener">${label}</a>`
+    : label;
 }
 
 function buildSummary() {
@@ -170,7 +178,7 @@ function renderTable() {
   elements.lettersBody.innerHTML = filtered.map((item) => `
     <tr>
       <td>${item.state || ""}</td>
-      <td><strong>${item.billNumber || ""}</strong></td>
+      <td><strong>${billNumberMarkup(item)}</strong></td>
       <td>${item.billTopic || ""}</td>
       <td><span class="position">${item.anaPosition || "Not listed"}</span></td>
       <td data-sort-value="${item.submissionDate || ""}">${formatDate(item.submissionDate)}</td>
@@ -201,7 +209,7 @@ function renderSelectedState() {
   elements.selectedStateCount.textContent = `${stateLetters.length} ${stateLetters.length === 1 ? "letter" : "letters"} submitted`;
   elements.stateLetters.innerHTML = stateLetters.length ? stateLetters.map((item) => `
     <article class="letter-card">
-      <strong>${item.billNumber || "Unlisted bill"}</strong>
+      <strong>${billNumberMarkup(item)}</strong>
       <span>${item.billTopic || "No topic listed"}</span>
       <dl>
         <dt>Position</dt><dd>${item.anaPosition || "Not listed"}</dd>
@@ -262,7 +270,7 @@ function bindEvents() {
 
 async function init() {
   try {
-    const response = await fetch("data/letters.json?v=20260617-fed", { cache: "no-store" });
+    const response = await fetch(`data/letters.json?v=${DATA_VERSION}`, { cache: "no-store" });
     if (!response.ok) throw new Error("Could not load letter data.");
     letters = await response.json();
     buildSummary();
