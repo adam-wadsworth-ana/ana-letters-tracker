@@ -1,5 +1,16 @@
 [
   {
+    "state": "California",
+    "stateCode": "CA",
+    "billNumber": "AB 1542",
+    "billTopic": "Sale of consumer data",
+    "anaPosition": "Oppose",
+    "submissionDate": "2026-06-11",
+    "submittedTo": "Senate Privacy Data Technology and Consumer Protection Committee",
+    "pdfUrl": "letters/Ad%20Trade%20Letter%20in%20Opposition%20to%20California%20AB%201542%20%28Senate%20Privacy%20Digital%20Technology%20and%20Consumer%20Protection%20Committee%29.pdf",
+    "sourceAction": "Letter"
+  },
+  {
     "state": "Massachusetts",
     "stateCode": "MA",
     "billNumber": "H. 5472",
@@ -41,6 +52,17 @@
     "submissionDate": "2026-06-05",
     "submittedTo": "Sen Privacy Data Technology and Consumer Protection",
     "pdfUrl": "letters/Ad%20Trade%20Letter%20in%20Opposition%20to%20California%20AB%20883%20%28Senate%20Privacy%20Digital%20Technologies%20and%20Consumer%20Protection%20Committee%29.pdf",
+    "sourceAction": "Letter"
+  },
+  {
+    "state": "Federal",
+    "stateCode": "FED",
+    "billNumber": "HR 8413 (SECURE)",
+    "billTopic": "SECURE Data Act",
+    "anaPosition": "Support",
+    "submissionDate": "2026-06-02",
+    "submittedTo": "House Energy and Commerce Subcommittee on Commerce, Manufacturing, and Trade",
+    "pdfUrl": "letters/ANA%20-%20SECURE%20Data%20Act%20Letter%20for%20the%20Record%20-%20Subcommittee%20Hearing%2871702083.1%29.pdf",
     "sourceAction": "Letter"
   },
   {
@@ -99,6 +121,17 @@
     "sourceAction": "Letter"
   },
   {
+    "state": "Federal",
+    "stateCode": "FED",
+    "billNumber": "Delivery App Fees PRM",
+    "billTopic": "Delivery App Fees PRM",
+    "anaPosition": "",
+    "submissionDate": "2026-05-18",
+    "submittedTo": "Federal Trade Commission",
+    "pdfUrl": "letters/ANA%20Comments%20on%20FTC%20ANPRM%20on%20Unfair%20or%20Deceptive%20Fees%20in%20Online%20Food%20Delivery%20Services.pdf",
+    "sourceAction": "Letter"
+  },
+  {
     "state": "California",
     "stateCode": "CA",
     "billNumber": "DROP Audit PRM",
@@ -140,6 +173,17 @@
     "submissionDate": "2026-04-14",
     "submittedTo": "State House",
     "pdfUrl": "letters/Ad%20Trade%20Opposition%20Letter%20to%20Hawaii%20HB%202137-%20House.pdf",
+    "sourceAction": "Letter"
+  },
+  {
+    "state": "Federal",
+    "stateCode": "FED",
+    "billNumber": "Negative Options PRM",
+    "billTopic": "Negative Options PRM",
+    "anaPosition": "",
+    "submissionDate": "2026-04-13",
+    "submittedTo": "Federal Trade Commission",
+    "pdfUrl": "letters/ANA%20Comments%20on%20FTC%20ANPRM%20on%20Negative%20Option%20Rule.pdf",
     "sourceAction": "Letter"
   },
   {
@@ -261,6 +305,17 @@
     "submissionDate": "2026-03-09",
     "submittedTo": "Senate Commerce & Labor Committee",
     "pdfUrl": "letters/Ad%20Trade%20Letter%20in%20Opposition%20to%20Tennessee%20SB%201998%20%28Senate%20Commerce%20and%20Labor%20Committee%29.pdf",
+    "sourceAction": "Letter"
+  },
+  {
+    "state": "Federal",
+    "stateCode": "FED",
+    "billNumber": "PRC Rate Authority",
+    "billTopic": "Rate Authority/CPI cap",
+    "anaPosition": "Oppose",
+    "submissionDate": "2026-03-05",
+    "submittedTo": "Postal Regulatory Commission",
+    "pdfUrl": "letters/PRC%20Joint%20Comments%203.5.26.pdf",
     "sourceAction": "Letter"
   },
   {
