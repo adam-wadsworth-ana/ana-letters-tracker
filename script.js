@@ -9,6 +9,7 @@ const STATE_NAMES = {
   DE: "Delaware",
   DC: "District of Columbia",
   FL: "Florida",
+  FED: "Federal",
   GA: "Georgia",
   HI: "Hawaii",
   ID: "Idaho",
@@ -53,7 +54,7 @@ const STATE_NAMES = {
 };
 
 const TILE_LAYOUT = [
-  ["AK", 1, 1], ["ME", 12, 1],
+  ["FED", 1, 1], ["AK", 2, 1], ["ME", 12, 1],
   ["VT", 10, 2], ["NH", 11, 2], ["WA", 2, 2], ["MT", 3, 2], ["ND", 4, 2], ["MN", 5, 2], ["WI", 6, 2], ["MI", 7, 2], ["NY", 9, 2], ["MA", 12, 2],
   ["OR", 2, 3], ["ID", 3, 3], ["SD", 4, 3], ["IA", 5, 3], ["IL", 6, 3], ["IN", 7, 3], ["OH", 8, 3], ["PA", 9, 3], ["NJ", 10, 3], ["CT", 11, 3], ["RI", 12, 3],
   ["CA", 2, 4], ["NV", 3, 4], ["WY", 4, 4], ["NE", 5, 4], ["MO", 6, 4], ["KY", 7, 4], ["WV", 8, 4], ["VA", 9, 4], ["MD", 10, 4], ["DE", 11, 4], ["DC", 12, 4],
