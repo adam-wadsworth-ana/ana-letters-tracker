@@ -83,7 +83,7 @@ let letters = [];
 let selectedState = "";
 let sortKey = "submissionDate";
 let sortDirection = "desc";
-const DATA_VERSION = "20260617-issue-links";
+const DATA_VERSION = "20260623-policy-tracker-update";
 
 function formatDate(value) {
   if (!value) return "Not dated";
