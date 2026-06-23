@@ -245,13 +245,17 @@ a {
 
 .filters {
   display: grid;
-  grid-template-columns: minmax(240px, 1.4fr) repeat(4, minmax(150px, 1fr)) repeat(2, minmax(145px, 0.8fr)) minmax(170px, 1fr);
+  grid-template-columns: minmax(240px, 2fr) repeat(3, minmax(150px, 1fr));
   gap: 14px;
   margin-bottom: 16px;
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--soft);
+}
+
+.filters label:first-child {
+  grid-column: span 2;
 }
 
 label span {
