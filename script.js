@@ -83,6 +83,7 @@ const elements = {
   sortFilter: document.querySelector("#sortFilter"),
   clearFilters: document.querySelector("#clearFilters"),
   resultCount: document.querySelector("#resultCount"),
+  loadMoreResults: document.querySelector("#loadMoreResults"),
   lettersBody: document.querySelector("#lettersBody")
 };
 
@@ -90,6 +91,8 @@ let letters = [];
 let selectedState = "";
 let sortKey = "submissionDate";
 let sortDirection = "desc";
+let visibleCount = 25;
+const PAGE_SIZE = 25;
 const DATA_VERSION = "20260623-policy-tracker-update";
 
 function formatDate(value) {
@@ -225,9 +228,15 @@ function updateSortControls() {
 
 function renderTable() {
   const filtered = sortRecords(getFilteredLetters());
-  elements.resultCount.textContent = `${filtered.length.toLocaleString()} ${filtered.length === 1 ? "record" : "records"}`;
+  const visibleRecords = filtered.slice(0, visibleCount);
+  const totalLabel = `${filtered.length.toLocaleString()} ${filtered.length === 1 ? "record" : "records"}`;
+  elements.resultCount.textContent = filtered.length > visibleRecords.length
+    ? `Showing ${visibleRecords.length.toLocaleString()} of ${totalLabel}`
+    : totalLabel;
+  elements.loadMoreResults.hidden = visibleRecords.length >= filtered.length;
+  elements.loadMoreResults.textContent = `Load ${Math.min(PAGE_SIZE, Math.max(filtered.length - visibleRecords.length, 0)).toLocaleString()} more results`;
   updateSortControls();
-  elements.lettersBody.innerHTML = filtered.map((item) => `
+  elements.lettersBody.innerHTML = visibleRecords.map((item) => `
     <tr>
       <td>${escapeHtml(item.state || "")}</td>
       <td><strong>${billNumberMarkup(item)}</strong></td>
@@ -275,6 +284,7 @@ function renderSelectedState() {
 
 function setSelectedState(code) {
   selectedState = code;
+  visibleCount = PAGE_SIZE;
   const stateName = STATE_NAMES[code] || "";
   elements.stateFilter.value = stateName && letters.some((item) => item.state === stateName) ? stateName : "";
   renderSelectedState();
@@ -291,6 +301,7 @@ function bindEvents() {
   elements.clearState.addEventListener("click", () => {
     selectedState = "";
     elements.stateFilter.value = "";
+    visibleCount = PAGE_SIZE;
     renderSelectedState();
     renderTable();
   });
@@ -307,6 +318,7 @@ function bindEvents() {
     elements.dateToFilter.value = "";
     sortKey = "submissionDate";
     sortDirection = "desc";
+    visibleCount = PAGE_SIZE;
     renderSelectedState();
     renderTable();
   });
@@ -327,6 +339,7 @@ function bindEvents() {
         selectedState = found ? found.stateCode : "";
         renderSelectedState();
       }
+      visibleCount = PAGE_SIZE;
       renderTable();
     });
   });
@@ -335,6 +348,12 @@ function bindEvents() {
     const [nextKey, nextDirection] = elements.sortFilter.value.split(":");
     sortKey = nextKey;
     sortDirection = nextDirection;
+    visibleCount = PAGE_SIZE;
+    renderTable();
+  });
+
+  elements.loadMoreResults.addEventListener("click", () => {
+    visibleCount += PAGE_SIZE;
     renderTable();
   });
 
@@ -347,6 +366,7 @@ function bindEvents() {
         sortKey = nextKey;
         sortDirection = nextKey === "submissionDate" ? "desc" : "asc";
       }
+      visibleCount = PAGE_SIZE;
       renderTable();
     });
   });

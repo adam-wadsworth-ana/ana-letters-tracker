@@ -106,8 +106,7 @@ main {
 }
 
 .map-section,
-.table-section,
-.maintenance {
+.table-section {
   margin-top: 28px;
 }
 
@@ -328,16 +327,16 @@ th button::after {
   position: absolute;
   right: 0;
   color: var(--muted);
-  content: "↕";
+  content: "<>";
   font-size: 12px;
 }
 
 th button.active-sort.asc::after {
-  content: "↑";
+  content: "^";
 }
 
 th button.active-sort.desc::after {
-  content: "↓";
+  content: "v";
 }
 
 tbody tr:hover {
@@ -359,22 +358,14 @@ tbody tr:hover {
   font-weight: 700;
 }
 
-.maintenance {
-  padding: 20px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--soft);
+.load-more-row {
+  display: flex;
+  justify-content: center;
+  padding: 18px 0 0;
 }
 
-.maintenance h2 {
-  margin-bottom: 8px;
-  font-size: 20px;
-}
-
-code {
-  padding: 2px 5px;
-  border-radius: 4px;
-  background: #e7f1eb;
+.load-more-row .ghost-button[hidden] {
+  display: none;
 }
 
 @media (max-width: 900px) {
