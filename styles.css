@@ -119,6 +119,14 @@ main {
   margin-bottom: 16px;
 }
 
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .ghost-button {
   min-height: 40px;
   padding: 0 14px;
@@ -237,9 +245,13 @@ a {
 
 .filters {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(170px, 220px) minmax(170px, 220px);
+  grid-template-columns: minmax(240px, 1.4fr) repeat(4, minmax(150px, 1fr)) repeat(2, minmax(145px, 0.8fr)) minmax(170px, 1fr);
   gap: 14px;
   margin-bottom: 16px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--soft);
 }
 
 label span {
@@ -296,8 +308,9 @@ th {
 }
 
 th button {
+  position: relative;
   width: 100%;
-  padding: 0;
+  padding: 0 18px 0 0;
   color: var(--ink);
   background: transparent;
   border: 0;
@@ -305,6 +318,22 @@ th button {
   font-weight: 800;
   text-align: left;
   cursor: pointer;
+}
+
+th button::after {
+  position: absolute;
+  right: 0;
+  color: var(--muted);
+  content: "↕";
+  font-size: 12px;
+}
+
+th button.active-sort.asc::after {
+  content: "↑";
+}
+
+th button.active-sort.desc::after {
+  content: "↓";
 }
 
 tbody tr:hover {

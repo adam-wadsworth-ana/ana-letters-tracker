@@ -75,6 +75,13 @@ const elements = {
   searchInput: document.querySelector("#searchInput"),
   stateFilter: document.querySelector("#stateFilter"),
   positionFilter: document.querySelector("#positionFilter"),
+  topicFilter: document.querySelector("#topicFilter"),
+  actionFilter: document.querySelector("#actionFilter"),
+  yearFilter: document.querySelector("#yearFilter"),
+  dateFromFilter: document.querySelector("#dateFromFilter"),
+  dateToFilter: document.querySelector("#dateToFilter"),
+  sortFilter: document.querySelector("#sortFilter"),
+  clearFilters: document.querySelector("#clearFilters"),
   resultCount: document.querySelector("#resultCount"),
   lettersBody: document.querySelector("#lettersBody")
 };
@@ -96,6 +103,19 @@ function normalize(value) {
   return String(value || "").toLowerCase();
 }
 
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function optionMarkup(value) {
+  return `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`;
+}
+
 function compareValues(a, b, key) {
   const left = a[key] || "";
   const right = b[key] || "";
@@ -115,8 +135,8 @@ function sortRecords(records) {
 function billNumberMarkup(item) {
   const label = item.billNumber || "Unlisted bill";
   return item.issueUrl
-    ? `<a class="bill-link" href="${item.issueUrl}" target="_blank" rel="noopener">${label}</a>`
-    : label;
+    ? `<a class="bill-link" href="${escapeHtml(item.issueUrl)}" target="_blank" rel="noopener">${escapeHtml(label)}</a>`
+    : escapeHtml(label);
 }
 
 function buildSummary() {
@@ -130,9 +150,15 @@ function buildSummary() {
 function buildFilters() {
   const states = [...new Set(letters.map((item) => item.state).filter(Boolean))].sort();
   const positions = [...new Set(letters.map((item) => item.anaPosition).filter(Boolean))].sort();
+  const topics = [...new Set(letters.map((item) => item.billTopic).filter(Boolean))].sort();
+  const actions = [...new Set(letters.map((item) => item.sourceAction).filter(Boolean))].sort();
+  const years = [...new Set(letters.map((item) => (item.submissionDate || "").slice(0, 4)).filter(Boolean))].sort((a, b) => b.localeCompare(a));
 
-  elements.stateFilter.insertAdjacentHTML("beforeend", states.map((state) => `<option value="${state}">${state}</option>`).join(""));
-  elements.positionFilter.insertAdjacentHTML("beforeend", positions.map((position) => `<option value="${position}">${position}</option>`).join(""));
+  elements.stateFilter.insertAdjacentHTML("beforeend", states.map(optionMarkup).join(""));
+  elements.positionFilter.insertAdjacentHTML("beforeend", positions.map(optionMarkup).join(""));
+  elements.topicFilter.insertAdjacentHTML("beforeend", topics.map(optionMarkup).join(""));
+  elements.actionFilter.insertAdjacentHTML("beforeend", actions.map(optionMarkup).join(""));
+  elements.yearFilter.insertAdjacentHTML("beforeend", years.map(optionMarkup).join(""));
 }
 
 function buildMap() {
@@ -161,29 +187,55 @@ function getFilteredLetters() {
   const query = normalize(elements.searchInput.value);
   const state = elements.stateFilter.value;
   const position = elements.positionFilter.value;
+  const topic = elements.topicFilter.value;
+  const action = elements.actionFilter.value;
+  const year = elements.yearFilter.value;
+  const dateFrom = elements.dateFromFilter.value;
+  const dateTo = elements.dateToFilter.value;
 
   return letters.filter((item) => {
     const haystack = normalize(Object.values(item).join(" "));
     const matchesQuery = !query || haystack.includes(query);
     const matchesState = !state || item.state === state;
     const matchesPosition = !position || item.anaPosition === position;
+    const matchesTopic = !topic || item.billTopic === topic;
+    const matchesAction = !action || item.sourceAction === action;
+    const matchesYear = !year || (item.submissionDate || "").startsWith(year);
+    const matchesFrom = !dateFrom || (item.submissionDate || "") >= dateFrom;
+    const matchesTo = !dateTo || (item.submissionDate || "") <= dateTo;
     const matchesSelected = !selectedState || item.stateCode === selectedState;
-    return matchesQuery && matchesState && matchesPosition && matchesSelected;
+    return matchesQuery && matchesState && matchesPosition && matchesTopic && matchesAction && matchesYear && matchesFrom && matchesTo && matchesSelected;
+  });
+}
+
+function updateSortControls() {
+  const sortValue = `${sortKey}:${sortDirection}`;
+  if ([...elements.sortFilter.options].some((option) => option.value === sortValue)) {
+    elements.sortFilter.value = sortValue;
+  }
+
+  document.querySelectorAll("th button[data-sort]").forEach((button) => {
+    const isActive = button.dataset.sort === sortKey;
+    button.classList.toggle("active-sort", isActive);
+    button.classList.toggle("asc", isActive && sortDirection === "asc");
+    button.classList.toggle("desc", isActive && sortDirection === "desc");
+    button.setAttribute("aria-sort", isActive ? (sortDirection === "asc" ? "ascending" : "descending") : "none");
   });
 }
 
 function renderTable() {
   const filtered = sortRecords(getFilteredLetters());
   elements.resultCount.textContent = `${filtered.length.toLocaleString()} ${filtered.length === 1 ? "record" : "records"}`;
+  updateSortControls();
   elements.lettersBody.innerHTML = filtered.map((item) => `
     <tr>
-      <td>${item.state || ""}</td>
+      <td>${escapeHtml(item.state || "")}</td>
       <td><strong>${billNumberMarkup(item)}</strong></td>
-      <td>${item.billTopic || ""}</td>
-      <td><span class="position">${item.anaPosition || "Not listed"}</span></td>
+      <td>${escapeHtml(item.billTopic || "")}</td>
+      <td><span class="position">${escapeHtml(item.anaPosition || "Not listed")}</span></td>
       <td data-sort-value="${item.submissionDate || ""}">${formatDate(item.submissionDate)}</td>
-      <td>${item.submittedTo || "Not listed"}</td>
-      <td>${item.pdfUrl ? `<a href="${item.pdfUrl}" target="_blank" rel="noopener">Open PDF</a>` : `<span class="pdf-missing">PDF unavailable</span>`}</td>
+      <td>${escapeHtml(item.submittedTo || "Not listed")}</td>
+      <td>${item.pdfUrl ? `<a href="${escapeHtml(item.pdfUrl)}" target="_blank" rel="noopener">Open PDF</a>` : `<span class="pdf-missing">PDF unavailable</span>`}</td>
     </tr>
   `).join("");
 }
@@ -210,13 +262,13 @@ function renderSelectedState() {
   elements.stateLetters.innerHTML = stateLetters.length ? stateLetters.map((item) => `
     <article class="letter-card">
       <strong>${billNumberMarkup(item)}</strong>
-      <span>${item.billTopic || "No topic listed"}</span>
+      <span>${escapeHtml(item.billTopic || "No topic listed")}</span>
       <dl>
-        <dt>Position</dt><dd>${item.anaPosition || "Not listed"}</dd>
+        <dt>Position</dt><dd>${escapeHtml(item.anaPosition || "Not listed")}</dd>
         <dt>Date</dt><dd>${formatDate(item.submissionDate)}</dd>
-        <dt>To</dt><dd>${item.submittedTo || "Not listed"}</dd>
+        <dt>To</dt><dd>${escapeHtml(item.submittedTo || "Not listed")}</dd>
       </dl>
-      ${item.pdfUrl ? `<a href="${item.pdfUrl}" target="_blank" rel="noopener">Open PDF</a>` : `<span class="pdf-missing">PDF unavailable</span>`}
+      ${item.pdfUrl ? `<a href="${escapeHtml(item.pdfUrl)}" target="_blank" rel="noopener">Open PDF</a>` : `<span class="pdf-missing">PDF unavailable</span>`}
     </article>
   `).join("") : `<p class="muted">No letters are listed for this state yet.</p>`;
 }
@@ -243,7 +295,32 @@ function bindEvents() {
     renderTable();
   });
 
-  [elements.searchInput, elements.stateFilter, elements.positionFilter].forEach((control) => {
+  elements.clearFilters.addEventListener("click", () => {
+    selectedState = "";
+    elements.searchInput.value = "";
+    elements.stateFilter.value = "";
+    elements.positionFilter.value = "";
+    elements.topicFilter.value = "";
+    elements.actionFilter.value = "";
+    elements.yearFilter.value = "";
+    elements.dateFromFilter.value = "";
+    elements.dateToFilter.value = "";
+    sortKey = "submissionDate";
+    sortDirection = "desc";
+    renderSelectedState();
+    renderTable();
+  });
+
+  [
+    elements.searchInput,
+    elements.stateFilter,
+    elements.positionFilter,
+    elements.topicFilter,
+    elements.actionFilter,
+    elements.yearFilter,
+    elements.dateFromFilter,
+    elements.dateToFilter
+  ].forEach((control) => {
     control.addEventListener("input", () => {
       if (control === elements.stateFilter) {
         const found = letters.find((item) => item.state === control.value);
@@ -252,6 +329,13 @@ function bindEvents() {
       }
       renderTable();
     });
+  });
+
+  elements.sortFilter.addEventListener("change", () => {
+    const [nextKey, nextDirection] = elements.sortFilter.value.split(":");
+    sortKey = nextKey;
+    sortDirection = nextDirection;
+    renderTable();
   });
 
   document.querySelectorAll("th button[data-sort]").forEach((button) => {

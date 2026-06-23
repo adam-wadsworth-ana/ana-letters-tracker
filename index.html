@@ -56,7 +56,10 @@
             <p class="eyebrow">Full tracker</p>
             <h2 id="tableTitle">Submitted Letters</h2>
           </div>
-          <p id="resultCount" class="muted">0 records</p>
+          <div class="table-actions">
+            <p id="resultCount" class="muted">0 records</p>
+            <button id="clearFilters" class="ghost-button" type="button">Clear filters</button>
+          </div>
         </div>
 
         <div class="filters" role="search">
@@ -74,6 +77,49 @@
             <span>ANA position</span>
             <select id="positionFilter">
               <option value="">All positions</option>
+            </select>
+          </label>
+          <label>
+            <span>Issue topic</span>
+            <select id="topicFilter">
+              <option value="">All topics</option>
+            </select>
+          </label>
+          <label>
+            <span>Action</span>
+            <select id="actionFilter">
+              <option value="">All actions</option>
+            </select>
+          </label>
+          <label>
+            <span>Year</span>
+            <select id="yearFilter">
+              <option value="">All years</option>
+            </select>
+          </label>
+          <label>
+            <span>From</span>
+            <input id="dateFromFilter" type="date">
+          </label>
+          <label>
+            <span>To</span>
+            <input id="dateToFilter" type="date">
+          </label>
+          <label>
+            <span>Sort</span>
+            <select id="sortFilter">
+              <option value="submissionDate:desc">Newest first</option>
+              <option value="submissionDate:asc">Oldest first</option>
+              <option value="state:asc">State A-Z</option>
+              <option value="state:desc">State Z-A</option>
+              <option value="billNumber:asc">Bill number A-Z</option>
+              <option value="billNumber:desc">Bill number Z-A</option>
+              <option value="billTopic:asc">Topic A-Z</option>
+              <option value="billTopic:desc">Topic Z-A</option>
+              <option value="anaPosition:asc">Position A-Z</option>
+              <option value="anaPosition:desc">Position Z-A</option>
+              <option value="submittedTo:asc">Recipient A-Z</option>
+              <option value="submittedTo:desc">Recipient Z-A</option>
             </select>
           </label>
         </div>
@@ -102,6 +148,6 @@
       </section>
     </main>
 
-    <script src="script.js?v=20260617-issue-links"></script>
+    <script src="script.js?v=20260623-table-filters"></script>
   </body>
 </html>
