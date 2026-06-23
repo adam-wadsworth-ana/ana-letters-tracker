@@ -1,5 +1,17 @@
 [
   {
+    "state": "New York",
+    "stateCode": "NY",
+    "billNumber": "NYHIPA (S9269/A10357)",
+    "issueUrl": "https://www.nysenate.gov/legislation/bills/2025/S9269",
+    "billTopic": "Health Data",
+    "anaPosition": "Oppose",
+    "submissionDate": "2026-06-23",
+    "submittedTo": "Governor",
+    "pdfUrl": "letters/Ad%20Trade%20Veto%20Letter%20on%20NYHIPA%20%28A10357%20and%20S9269%29.pdf",
+    "sourceAction": "Veto Letter"
+  },
+  {
     "state": "California",
     "stateCode": "CA",
     "billNumber": "SB 1050",
