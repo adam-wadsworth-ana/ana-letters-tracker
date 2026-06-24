@@ -96,6 +96,8 @@ let sortKey = "submissionDate";
 let sortDirection = "desc";
 let visibleCount = 25;
 const PAGE_SIZE = 25;
+let visibleStateLetterCount = 5;
+const STATE_PANEL_PAGE_SIZE = 5;
 const DATA_VERSION = "20260623-policy-tracker-update";
 
 function formatDate(value) {
@@ -251,6 +253,7 @@ function clearFilterByKey(key, value) {
     } else {
       selectedStateCodes.clear();
     }
+    visibleStateLetterCount = STATE_PANEL_PAGE_SIZE;
     renderSelectedState();
   }
   if (key === "position") elements.positionFilter.value = "";
@@ -423,13 +426,16 @@ function renderSelectedState() {
   const stateLetters = letters
     .filter((item) => selectedStateCodes.has(item.stateCode))
     .sort((a, b) => (b.submissionDate || "").localeCompare(a.submissionDate || ""));
+  const visibleStateLetters = stateLetters.slice(0, visibleStateLetterCount);
+  const remainingStateLetters = stateLetters.length - visibleStateLetters.length;
 
   const selectedLabels = [...selectedStateCodes]
     .map(getStateLabelFromCode)
     .sort();
   elements.selectedStateName.textContent = selectedLabels.length === 1 ? selectedLabels[0] : `${selectedLabels.length} selected areas`;
   elements.selectedStateCount.textContent = `${stateLetters.length} ${stateLetters.length === 1 ? "letter" : "letters"} submitted`;
-  elements.stateLetters.innerHTML = stateLetters.length ? stateLetters.map((item) => `
+  elements.stateLetters.innerHTML = stateLetters.length ? `
+    ${visibleStateLetters.map((item) => `
     <article class="letter-card">
       <strong>${billNumberMarkup(item)}</strong>
       <span>${escapeHtml(item.state || "No state listed")} - ${escapeHtml(item.billTopic || "No topic listed")}</span>
@@ -440,7 +446,13 @@ function renderSelectedState() {
       </dl>
       ${item.pdfUrl ? `<a href="${escapeHtml(item.pdfUrl)}" target="_blank" rel="noopener">Open PDF</a>` : `<span class="pdf-missing">PDF unavailable</span>`}
     </article>
-  `).join("") : `<p class="muted">No letters are listed for this state yet.</p>`;
+    `).join("")}
+    ${remainingStateLetters > 0 ? `
+      <button id="loadMoreStateLetters" class="ghost-button state-load-more" type="button">
+        Load ${Math.min(STATE_PANEL_PAGE_SIZE, remainingStateLetters).toLocaleString()} more results
+      </button>
+    ` : ""}
+  ` : `<p class="muted">No letters are listed for this state yet.</p>`;
 }
 
 function setSelectedState(code) {
@@ -450,6 +462,7 @@ function setSelectedState(code) {
     selectedStateCodes.add(code);
   }
   visibleCount = PAGE_SIZE;
+  visibleStateLetterCount = STATE_PANEL_PAGE_SIZE;
   elements.stateFilter.value = "";
   renderSelectedState();
   renderTable();
@@ -466,6 +479,7 @@ function bindEvents() {
     selectedStateCodes.clear();
     elements.stateFilter.value = "";
     visibleCount = PAGE_SIZE;
+    visibleStateLetterCount = STATE_PANEL_PAGE_SIZE;
     renderSelectedState();
     renderTable();
   });
@@ -484,6 +498,7 @@ function bindEvents() {
     sortKey = "submissionDate";
     sortDirection = "desc";
     visibleCount = PAGE_SIZE;
+    visibleStateLetterCount = STATE_PANEL_PAGE_SIZE;
     renderSelectedState();
     renderTable();
   });
@@ -494,6 +509,7 @@ function bindEvents() {
         const nextStateCode = getStateCodeFromName(control.value);
         if (nextStateCode) selectedStateCodes.add(nextStateCode);
         elements.stateFilter.value = "";
+        visibleStateLetterCount = STATE_PANEL_PAGE_SIZE;
         renderSelectedState();
       }
       if (control === elements.topicFilter) {
@@ -516,6 +532,13 @@ function bindEvents() {
   elements.loadMoreResults.addEventListener("click", () => {
     visibleCount += PAGE_SIZE;
     renderTable();
+  });
+
+  elements.stateLetters.addEventListener("click", (event) => {
+    const button = event.target.closest("#loadMoreStateLetters");
+    if (!button) return;
+    visibleStateLetterCount += STATE_PANEL_PAGE_SIZE;
+    renderSelectedState();
   });
 
   elements.activeFilters.addEventListener("click", (event) => {

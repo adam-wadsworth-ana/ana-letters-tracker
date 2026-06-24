@@ -233,6 +233,10 @@ main {
   margin: 0;
 }
 
+.state-load-more {
+  width: 100%;
+}
+
 a {
   color: var(--ana-green-dark);
   font-weight: 700;
