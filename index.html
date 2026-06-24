@@ -58,6 +58,8 @@
           </div>
           <div class="table-actions">
             <p id="resultCount" class="muted">0 records</p>
+            <button id="shareView" class="ghost-button" type="button">Copy view link</button>
+            <button id="exportCsv" class="ghost-button" type="button">Download CSV</button>
             <button id="clearFilters" class="ghost-button" type="button">Clear filters</button>
           </div>
         </div>
@@ -123,6 +125,7 @@
             </select>
           </label>
         </div>
+        <div id="activeFilters" class="active-filters" aria-live="polite"></div>
 
         <div class="table-wrap">
           <table>
@@ -146,6 +149,6 @@
       </section>
     </main>
 
-    <script src="script.js?v=20260623-table-filters-load-more"></script>
+    <script src="script.js?v=20260624-share-export-chips"></script>
   </body>
 </html>

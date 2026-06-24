@@ -82,7 +82,10 @@ const elements = {
   dateToFilter: document.querySelector("#dateToFilter"),
   sortFilter: document.querySelector("#sortFilter"),
   clearFilters: document.querySelector("#clearFilters"),
+  shareView: document.querySelector("#shareView"),
+  exportCsv: document.querySelector("#exportCsv"),
   resultCount: document.querySelector("#resultCount"),
+  activeFilters: document.querySelector("#activeFilters"),
   loadMoreResults: document.querySelector("#loadMoreResults"),
   lettersBody: document.querySelector("#lettersBody")
 };
@@ -119,6 +122,24 @@ function optionMarkup(value) {
   return `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`;
 }
 
+function getFilterControls() {
+  return [
+    elements.searchInput,
+    elements.stateFilter,
+    elements.positionFilter,
+    elements.topicFilter,
+    elements.actionFilter,
+    elements.yearFilter,
+    elements.dateFromFilter,
+    elements.dateToFilter
+  ];
+}
+
+function getStateCodeFromName(stateName) {
+  const found = letters.find((item) => item.state === stateName);
+  return found ? found.stateCode : "";
+}
+
 function compareValues(a, b, key) {
   const left = a[key] || "";
   const right = b[key] || "";
@@ -133,6 +154,137 @@ function sortRecords(records) {
     const result = compareValues(a, b, sortKey);
     return sortDirection === "asc" ? result : -result;
   });
+}
+
+function getActiveFilterItems() {
+  const items = [];
+  if (elements.searchInput.value) items.push({ key: "search", label: `Search: ${elements.searchInput.value}` });
+  if (elements.stateFilter.value) items.push({ key: "state", label: `State/Federal: ${elements.stateFilter.value}` });
+  if (elements.positionFilter.value) items.push({ key: "position", label: `Position: ${elements.positionFilter.value}` });
+  if (elements.topicFilter.value) items.push({ key: "topic", label: `Topic: ${elements.topicFilter.value}` });
+  if (elements.actionFilter.value) items.push({ key: "action", label: `Action: ${elements.actionFilter.value}` });
+  if (elements.yearFilter.value) items.push({ key: "year", label: `Year: ${elements.yearFilter.value}` });
+  if (elements.dateFromFilter.value) items.push({ key: "from", label: `From: ${formatDate(elements.dateFromFilter.value)}` });
+  if (elements.dateToFilter.value) items.push({ key: "to", label: `To: ${formatDate(elements.dateToFilter.value)}` });
+  return items;
+}
+
+function renderActiveFilters() {
+  const items = getActiveFilterItems();
+  elements.activeFilters.innerHTML = items.length ? items.map((item) => `
+    <button class="filter-chip" type="button" data-filter="${item.key}" aria-label="Remove ${escapeHtml(item.label)} filter">
+      <span>${escapeHtml(item.label)}</span>
+      <strong aria-hidden="true">x</strong>
+    </button>
+  `).join("") : "";
+}
+
+function updateUrlFromFilters() {
+  const params = new URLSearchParams();
+  if (elements.searchInput.value) params.set("q", elements.searchInput.value);
+  if (elements.stateFilter.value) params.set("state", elements.stateFilter.value);
+  if (elements.positionFilter.value) params.set("position", elements.positionFilter.value);
+  if (elements.topicFilter.value) params.set("topic", elements.topicFilter.value);
+  if (elements.actionFilter.value) params.set("action", elements.actionFilter.value);
+  if (elements.yearFilter.value) params.set("year", elements.yearFilter.value);
+  if (elements.dateFromFilter.value) params.set("from", elements.dateFromFilter.value);
+  if (elements.dateToFilter.value) params.set("to", elements.dateToFilter.value);
+  if (sortKey !== "submissionDate" || sortDirection !== "desc") params.set("sort", `${sortKey}:${sortDirection}`);
+
+  const queryString = params.toString();
+  const nextUrl = `${window.location.pathname}${queryString ? `?${queryString}` : ""}${window.location.hash}`;
+  window.history.replaceState({}, "", nextUrl);
+}
+
+function setSelectValue(select, value) {
+  if ([...select.options].some((option) => option.value === value)) {
+    select.value = value;
+  }
+}
+
+function applyFiltersFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  elements.searchInput.value = params.get("q") || "";
+  setSelectValue(elements.stateFilter, params.get("state") || "");
+  setSelectValue(elements.positionFilter, params.get("position") || "");
+  setSelectValue(elements.topicFilter, params.get("topic") || "");
+  setSelectValue(elements.actionFilter, params.get("action") || "");
+  setSelectValue(elements.yearFilter, params.get("year") || "");
+  elements.dateFromFilter.value = params.get("from") || "";
+  elements.dateToFilter.value = params.get("to") || "";
+
+  const sortParam = params.get("sort");
+  if (sortParam && [...elements.sortFilter.options].some((option) => option.value === sortParam)) {
+    const [nextKey, nextDirection] = sortParam.split(":");
+    sortKey = nextKey;
+    sortDirection = nextDirection;
+  }
+
+  selectedState = elements.stateFilter.value ? getStateCodeFromName(elements.stateFilter.value) : "";
+}
+
+function clearFilterByKey(key) {
+  if (key === "search") elements.searchInput.value = "";
+  if (key === "state") {
+    elements.stateFilter.value = "";
+    selectedState = "";
+    renderSelectedState();
+  }
+  if (key === "position") elements.positionFilter.value = "";
+  if (key === "topic") elements.topicFilter.value = "";
+  if (key === "action") elements.actionFilter.value = "";
+  if (key === "year") elements.yearFilter.value = "";
+  if (key === "from") elements.dateFromFilter.value = "";
+  if (key === "to") elements.dateToFilter.value = "";
+  visibleCount = PAGE_SIZE;
+  renderTable();
+}
+
+function csvValue(value) {
+  return `"${String(value || "").replaceAll('"', '""')}"`;
+}
+
+function downloadCsv() {
+  const rows = sortRecords(getFilteredLetters());
+  const headers = ["State", "Bill Number", "Bill Topic", "ANA Position", "Submission Date", "Submitted To", "Issue URL", "PDF URL"];
+  const csvRows = [
+    headers.map(csvValue).join(","),
+    ...rows.map((item) => [
+      item.state,
+      item.billNumber,
+      item.billTopic,
+      item.anaPosition,
+      item.submissionDate,
+      item.submittedTo,
+      item.issueUrl,
+      item.pdfUrl
+    ].map(csvValue).join(","))
+  ];
+
+  const blob = new Blob([csvRows.join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  const dateStamp = new Date().toISOString().slice(0, 10);
+  link.href = url;
+  link.download = `ana-letter-tracker-${dateStamp}.csv`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function copyViewLink() {
+  updateUrlFromFilters();
+  const viewUrl = window.location.href;
+  try {
+    await navigator.clipboard.writeText(viewUrl);
+    elements.shareView.textContent = "Link copied";
+    window.setTimeout(() => {
+      elements.shareView.textContent = "Copy view link";
+    }, 1800);
+  } catch (error) {
+    window.prompt("Copy this link:", viewUrl);
+  }
 }
 
 function billNumberMarkup(item) {
@@ -235,7 +387,10 @@ function renderTable() {
     : totalLabel;
   elements.loadMoreResults.hidden = visibleRecords.length >= filtered.length;
   elements.loadMoreResults.textContent = `Load ${Math.min(PAGE_SIZE, Math.max(filtered.length - visibleRecords.length, 0)).toLocaleString()} more results`;
+  elements.exportCsv.disabled = filtered.length === 0;
   updateSortControls();
+  renderActiveFilters();
+  updateUrlFromFilters();
   elements.lettersBody.innerHTML = visibleRecords.map((item) => `
     <tr>
       <td>${escapeHtml(item.state || "")}</td>
@@ -323,20 +478,10 @@ function bindEvents() {
     renderTable();
   });
 
-  [
-    elements.searchInput,
-    elements.stateFilter,
-    elements.positionFilter,
-    elements.topicFilter,
-    elements.actionFilter,
-    elements.yearFilter,
-    elements.dateFromFilter,
-    elements.dateToFilter
-  ].forEach((control) => {
+  getFilterControls().forEach((control) => {
     control.addEventListener("input", () => {
       if (control === elements.stateFilter) {
-        const found = letters.find((item) => item.state === control.value);
-        selectedState = found ? found.stateCode : "";
+        selectedState = getStateCodeFromName(control.value);
         renderSelectedState();
       }
       visibleCount = PAGE_SIZE;
@@ -356,6 +501,15 @@ function bindEvents() {
     visibleCount += PAGE_SIZE;
     renderTable();
   });
+
+  elements.activeFilters.addEventListener("click", (event) => {
+    const button = event.target.closest(".filter-chip");
+    if (!button) return;
+    clearFilterByKey(button.dataset.filter);
+  });
+
+  elements.shareView.addEventListener("click", copyViewLink);
+  elements.exportCsv.addEventListener("click", downloadCsv);
 
   document.querySelectorAll("th button[data-sort]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -380,6 +534,7 @@ async function init() {
     buildSummary();
     buildFilters();
     buildMap();
+    applyFiltersFromUrl();
     renderSelectedState();
     renderTable();
     bindEvents();
