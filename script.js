@@ -90,7 +90,8 @@ const elements = {
 };
 
 let letters = [];
-let selectedState = "";
+let selectedStateCodes = new Set();
+let selectedTopics = new Set();
 let sortKey = "submissionDate";
 let sortDirection = "desc";
 let visibleCount = 25;
@@ -139,6 +140,15 @@ function getStateCodeFromName(stateName) {
   return found ? found.stateCode : "";
 }
 
+function getStateLabelFromCode(code) {
+  return STATE_NAMES[code] || code;
+}
+
+function getStateCodeFromParam(value) {
+  if (STATE_NAMES[value]) return value;
+  return getStateCodeFromName(value);
+}
+
 function compareValues(a, b, key) {
   const left = a[key] || "";
   const right = b[key] || "";
@@ -158,9 +168,15 @@ function sortRecords(records) {
 function getActiveFilterItems() {
   const items = [];
   if (elements.searchInput.value) items.push({ key: "search", label: `Search: ${elements.searchInput.value}` });
-  if (elements.stateFilter.value) items.push({ key: "state", label: `State/Federal: ${elements.stateFilter.value}` });
+  [...selectedStateCodes]
+    .sort((a, b) => getStateLabelFromCode(a).localeCompare(getStateLabelFromCode(b)))
+    .forEach((code) => {
+      items.push({ key: "state", value: code, label: `State/Federal: ${getStateLabelFromCode(code)}` });
+    });
   if (elements.positionFilter.value) items.push({ key: "position", label: `Position: ${elements.positionFilter.value}` });
-  if (elements.topicFilter.value) items.push({ key: "topic", label: `Topic: ${elements.topicFilter.value}` });
+  [...selectedTopics].sort().forEach((topic) => {
+    items.push({ key: "topic", value: topic, label: `Topic: ${topic}` });
+  });
   if (elements.actionFilter.value) items.push({ key: "action", label: `Action: ${elements.actionFilter.value}` });
   if (elements.yearFilter.value) items.push({ key: "year", label: `Year: ${elements.yearFilter.value}` });
   if (elements.dateFromFilter.value) items.push({ key: "from", label: `From: ${formatDate(elements.dateFromFilter.value)}` });
@@ -171,7 +187,7 @@ function getActiveFilterItems() {
 function renderActiveFilters() {
   const items = getActiveFilterItems();
   elements.activeFilters.innerHTML = items.length ? items.map((item) => `
-    <button class="filter-chip" type="button" data-filter="${item.key}" aria-label="Remove ${escapeHtml(item.label)} filter">
+    <button class="filter-chip" type="button" data-filter="${item.key}" data-value="${escapeHtml(item.value || "")}" aria-label="Remove ${escapeHtml(item.label)} filter">
       <span>${escapeHtml(item.label)}</span>
       <strong aria-hidden="true">x</strong>
     </button>
@@ -181,9 +197,9 @@ function renderActiveFilters() {
 function updateUrlFromFilters() {
   const params = new URLSearchParams();
   if (elements.searchInput.value) params.set("q", elements.searchInput.value);
-  if (elements.stateFilter.value) params.set("state", elements.stateFilter.value);
+  [...selectedStateCodes].sort().forEach((code) => params.append("state", code));
   if (elements.positionFilter.value) params.set("position", elements.positionFilter.value);
-  if (elements.topicFilter.value) params.set("topic", elements.topicFilter.value);
+  [...selectedTopics].sort().forEach((topic) => params.append("topic", topic));
   if (elements.actionFilter.value) params.set("action", elements.actionFilter.value);
   if (elements.yearFilter.value) params.set("year", elements.yearFilter.value);
   if (elements.dateFromFilter.value) params.set("from", elements.dateFromFilter.value);
@@ -204,13 +220,20 @@ function setSelectValue(select, value) {
 function applyFiltersFromUrl() {
   const params = new URLSearchParams(window.location.search);
   elements.searchInput.value = params.get("q") || "";
-  setSelectValue(elements.stateFilter, params.get("state") || "");
   setSelectValue(elements.positionFilter, params.get("position") || "");
-  setSelectValue(elements.topicFilter, params.get("topic") || "");
   setSelectValue(elements.actionFilter, params.get("action") || "");
   setSelectValue(elements.yearFilter, params.get("year") || "");
   elements.dateFromFilter.value = params.get("from") || "";
   elements.dateToFilter.value = params.get("to") || "";
+
+  selectedStateCodes = new Set(
+    params.getAll("state")
+      .map(getStateCodeFromParam)
+      .filter(Boolean)
+  );
+  selectedTopics = new Set(params.getAll("topic").filter(Boolean));
+  elements.stateFilter.value = "";
+  elements.topicFilter.value = "";
 
   const sortParam = params.get("sort");
   if (sortParam && [...elements.sortFilter.options].some((option) => option.value === sortParam)) {
@@ -218,19 +241,26 @@ function applyFiltersFromUrl() {
     sortKey = nextKey;
     sortDirection = nextDirection;
   }
-
-  selectedState = elements.stateFilter.value ? getStateCodeFromName(elements.stateFilter.value) : "";
 }
 
-function clearFilterByKey(key) {
+function clearFilterByKey(key, value) {
   if (key === "search") elements.searchInput.value = "";
   if (key === "state") {
-    elements.stateFilter.value = "";
-    selectedState = "";
+    if (value) {
+      selectedStateCodes.delete(value);
+    } else {
+      selectedStateCodes.clear();
+    }
     renderSelectedState();
   }
   if (key === "position") elements.positionFilter.value = "";
-  if (key === "topic") elements.topicFilter.value = "";
+  if (key === "topic") {
+    if (value) {
+      selectedTopics.delete(value);
+    } else {
+      selectedTopics.clear();
+    }
+  }
   if (key === "action") elements.actionFilter.value = "";
   if (key === "year") elements.yearFilter.value = "";
   if (key === "from") elements.dateFromFilter.value = "";
@@ -318,9 +348,7 @@ function buildMap() {
 
 function getFilteredLetters() {
   const query = normalize(elements.searchInput.value);
-  const state = elements.stateFilter.value;
   const position = elements.positionFilter.value;
-  const topic = elements.topicFilter.value;
   const action = elements.actionFilter.value;
   const year = elements.yearFilter.value;
   const dateFrom = elements.dateFromFilter.value;
@@ -329,15 +357,14 @@ function getFilteredLetters() {
   return letters.filter((item) => {
     const haystack = normalize(Object.values(item).join(" "));
     const matchesQuery = !query || haystack.includes(query);
-    const matchesState = !state || item.state === state;
+    const matchesState = !selectedStateCodes.size || selectedStateCodes.has(item.stateCode);
     const matchesPosition = !position || item.anaPosition === position;
-    const matchesTopic = !topic || item.billTopic === topic;
+    const matchesTopic = !selectedTopics.size || selectedTopics.has(item.billTopic);
     const matchesAction = !action || item.sourceAction === action;
     const matchesYear = !year || (item.submissionDate || "").startsWith(year);
     const matchesFrom = !dateFrom || (item.submissionDate || "") >= dateFrom;
     const matchesTo = !dateTo || (item.submissionDate || "") <= dateTo;
-    const matchesSelected = !selectedState || item.stateCode === selectedState;
-    return matchesQuery && matchesState && matchesPosition && matchesTopic && matchesAction && matchesYear && matchesFrom && matchesTo && matchesSelected;
+    return matchesQuery && matchesState && matchesPosition && matchesTopic && matchesAction && matchesYear && matchesFrom && matchesTo;
   });
 }
 
@@ -383,10 +410,10 @@ function renderTable() {
 
 function renderSelectedState() {
   document.querySelectorAll(".state-tile").forEach((button) => {
-    button.classList.toggle("active", button.dataset.stateCode === selectedState);
+    button.classList.toggle("active", selectedStateCodes.has(button.dataset.stateCode));
   });
 
-  if (!selectedState) {
+  if (!selectedStateCodes.size) {
     elements.selectedStateName.textContent = "All states";
     elements.selectedStateCount.textContent = "Select a highlighted state to view letters.";
     elements.stateLetters.innerHTML = "";
@@ -394,16 +421,18 @@ function renderSelectedState() {
   }
 
   const stateLetters = letters
-    .filter((item) => item.stateCode === selectedState)
+    .filter((item) => selectedStateCodes.has(item.stateCode))
     .sort((a, b) => (b.submissionDate || "").localeCompare(a.submissionDate || ""));
 
-  const stateName = STATE_NAMES[selectedState] || selectedState;
-  elements.selectedStateName.textContent = stateName;
+  const selectedLabels = [...selectedStateCodes]
+    .map(getStateLabelFromCode)
+    .sort();
+  elements.selectedStateName.textContent = selectedLabels.length === 1 ? selectedLabels[0] : `${selectedLabels.length} selected areas`;
   elements.selectedStateCount.textContent = `${stateLetters.length} ${stateLetters.length === 1 ? "letter" : "letters"} submitted`;
   elements.stateLetters.innerHTML = stateLetters.length ? stateLetters.map((item) => `
     <article class="letter-card">
       <strong>${billNumberMarkup(item)}</strong>
-      <span>${escapeHtml(item.billTopic || "No topic listed")}</span>
+      <span>${escapeHtml(item.state || "No state listed")} - ${escapeHtml(item.billTopic || "No topic listed")}</span>
       <dl>
         <dt>Position</dt><dd>${escapeHtml(item.anaPosition || "Not listed")}</dd>
         <dt>Date</dt><dd>${formatDate(item.submissionDate)}</dd>
@@ -415,10 +444,13 @@ function renderSelectedState() {
 }
 
 function setSelectedState(code) {
-  selectedState = code;
+  if (selectedStateCodes.has(code)) {
+    selectedStateCodes.delete(code);
+  } else {
+    selectedStateCodes.add(code);
+  }
   visibleCount = PAGE_SIZE;
-  const stateName = STATE_NAMES[code] || "";
-  elements.stateFilter.value = stateName && letters.some((item) => item.state === stateName) ? stateName : "";
+  elements.stateFilter.value = "";
   renderSelectedState();
   renderTable();
 }
@@ -431,7 +463,7 @@ function bindEvents() {
   });
 
   elements.clearState.addEventListener("click", () => {
-    selectedState = "";
+    selectedStateCodes.clear();
     elements.stateFilter.value = "";
     visibleCount = PAGE_SIZE;
     renderSelectedState();
@@ -439,7 +471,8 @@ function bindEvents() {
   });
 
   elements.clearFilters.addEventListener("click", () => {
-    selectedState = "";
+    selectedStateCodes.clear();
+    selectedTopics.clear();
     elements.searchInput.value = "";
     elements.stateFilter.value = "";
     elements.positionFilter.value = "";
@@ -458,8 +491,14 @@ function bindEvents() {
   getFilterControls().forEach((control) => {
     control.addEventListener("input", () => {
       if (control === elements.stateFilter) {
-        selectedState = getStateCodeFromName(control.value);
+        const nextStateCode = getStateCodeFromName(control.value);
+        if (nextStateCode) selectedStateCodes.add(nextStateCode);
+        elements.stateFilter.value = "";
         renderSelectedState();
+      }
+      if (control === elements.topicFilter) {
+        if (control.value) selectedTopics.add(control.value);
+        elements.topicFilter.value = "";
       }
       visibleCount = PAGE_SIZE;
       renderTable();
@@ -482,7 +521,7 @@ function bindEvents() {
   elements.activeFilters.addEventListener("click", (event) => {
     const button = event.target.closest(".filter-chip");
     if (!button) return;
-    clearFilterByKey(button.dataset.filter);
+    clearFilterByKey(button.dataset.filter, button.dataset.value);
   });
 
   elements.shareView.addEventListener("click", copyViewLink);
