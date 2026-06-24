@@ -260,6 +260,18 @@ function billNumberMarkup(item) {
     : escapeHtml(label);
 }
 
+function positionClass(value) {
+  const position = normalize(value);
+  if (position.includes("oppose")) return "position position-oppose";
+  if (position.includes("support")) return "position position-support";
+  return "position position-neutral";
+}
+
+function positionMarkup(value) {
+  const label = value || "Not listed";
+  return `<span class="${positionClass(label)}">${escapeHtml(label)}</span>`;
+}
+
 function buildSummary() {
   const statesWithLetters = new Set(letters.map((item) => item.stateCode).filter(Boolean));
   const newest = [...letters].sort((a, b) => (b.submissionDate || "").localeCompare(a.submissionDate || ""))[0];
@@ -361,7 +373,7 @@ function renderTable() {
       <td>${escapeHtml(item.state || "")}</td>
       <td><strong>${billNumberMarkup(item)}</strong></td>
       <td>${escapeHtml(item.billTopic || "")}</td>
-      <td><span class="position">${escapeHtml(item.anaPosition || "Not listed")}</span></td>
+      <td>${positionMarkup(item.anaPosition)}</td>
       <td data-sort-value="${item.submissionDate || ""}">${formatDate(item.submissionDate)}</td>
       <td>${escapeHtml(item.submittedTo || "Not listed")}</td>
       <td>${item.pdfUrl ? `<a href="${escapeHtml(item.pdfUrl)}" target="_blank" rel="noopener">Open PDF</a>` : `<span class="pdf-missing">PDF unavailable</span>`}</td>

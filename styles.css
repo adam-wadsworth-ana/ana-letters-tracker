@@ -387,10 +387,23 @@ tbody tr:hover {
   display: inline-block;
   padding: 4px 9px;
   border-radius: 999px;
-  color: var(--ana-green-dark);
-  background: #e4f7ec;
   font-size: 13px;
   font-weight: 800;
+}
+
+.position-support {
+  color: var(--ana-green-dark);
+  background: #e4f7ec;
+}
+
+.position-oppose {
+  color: #9f1d1d;
+  background: #fde8e8;
+}
+
+.position-neutral {
+  color: #4b5a54;
+  background: #edf2ef;
 }
 
 .pdf-missing {
