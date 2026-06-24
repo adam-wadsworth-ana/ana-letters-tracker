@@ -83,7 +83,6 @@ const elements = {
   sortFilter: document.querySelector("#sortFilter"),
   clearFilters: document.querySelector("#clearFilters"),
   shareView: document.querySelector("#shareView"),
-  exportCsv: document.querySelector("#exportCsv"),
   resultCount: document.querySelector("#resultCount"),
   activeFilters: document.querySelector("#activeFilters"),
   loadMoreResults: document.querySelector("#loadMoreResults"),
@@ -240,39 +239,6 @@ function clearFilterByKey(key) {
   renderTable();
 }
 
-function csvValue(value) {
-  return `"${String(value || "").replaceAll('"', '""')}"`;
-}
-
-function downloadCsv() {
-  const rows = sortRecords(getFilteredLetters());
-  const headers = ["State", "Bill Number", "Bill Topic", "ANA Position", "Submission Date", "Submitted To", "Issue URL", "PDF URL"];
-  const csvRows = [
-    headers.map(csvValue).join(","),
-    ...rows.map((item) => [
-      item.state,
-      item.billNumber,
-      item.billTopic,
-      item.anaPosition,
-      item.submissionDate,
-      item.submittedTo,
-      item.issueUrl,
-      item.pdfUrl
-    ].map(csvValue).join(","))
-  ];
-
-  const blob = new Blob([csvRows.join("\r\n")], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  const dateStamp = new Date().toISOString().slice(0, 10);
-  link.href = url;
-  link.download = `ana-letter-tracker-${dateStamp}.csv`;
-  document.body.append(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
-
 async function copyViewLink() {
   updateUrlFromFilters();
   const viewUrl = window.location.href;
@@ -387,7 +353,6 @@ function renderTable() {
     : totalLabel;
   elements.loadMoreResults.hidden = visibleRecords.length >= filtered.length;
   elements.loadMoreResults.textContent = `Load ${Math.min(PAGE_SIZE, Math.max(filtered.length - visibleRecords.length, 0)).toLocaleString()} more results`;
-  elements.exportCsv.disabled = filtered.length === 0;
   updateSortControls();
   renderActiveFilters();
   updateUrlFromFilters();
@@ -509,7 +474,6 @@ function bindEvents() {
   });
 
   elements.shareView.addEventListener("click", copyViewLink);
-  elements.exportCsv.addEventListener("click", downloadCsv);
 
   document.querySelectorAll("th button[data-sort]").forEach((button) => {
     button.addEventListener("click", () => {

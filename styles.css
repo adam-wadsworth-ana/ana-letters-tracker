@@ -141,12 +141,6 @@ main {
   border-color: var(--ana-green);
 }
 
-.ghost-button:disabled {
-  color: var(--muted);
-  cursor: not-allowed;
-  opacity: 0.65;
-}
-
 .map-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.7fr);
