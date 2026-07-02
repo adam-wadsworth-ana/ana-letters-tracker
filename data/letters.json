@@ -1,5 +1,17 @@
 [
   {
+    "state": "California",
+    "stateCode": "CA",
+    "billNumber": "SB 1050",
+    "issueUrl": "https://leginfo.legislature.ca.gov/faces/billStatusClient.xhtml?bill_id=202520260SB1050",
+    "billTopic": "Synthetic Performers",
+    "anaPosition": "Oppose",
+    "submissionDate": "2026-06-29",
+    "submittedTo": "Assembly Judiciary Committee",
+    "pdfUrl": "letters/Ad%20Trade%20Letter%20in%20Opposition%20to%20California%20SB%201050%20%28Assembly%20Committee%20on%20Judiciary%29%2871967990.1%29.docx.pdf",
+    "sourceAction": "Letter"
+  },
+  {
     "state": "New York",
     "stateCode": "NY",
     "billNumber": "NYHIPA (S9269/A10357)",
